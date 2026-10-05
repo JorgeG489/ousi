@@ -747,9 +747,10 @@ function Library:CreateWindow(options)
 
         -- Restore a previously accepted key
         local keyFile = KS.SaveFile
+        local restored = false
         if keyFile and isfile and readfile then
             local ok, saved = pcall(function() return isfile(keyFile) and readfile(keyFile) or nil end)
-            if ok and saved and saved ~= "" then box.Text = saved end
+            if ok and saved and saved ~= "" then box.Text = saved; restored = true end
         end
 
         getBtn.MouseButton1Click:Connect(function()
@@ -793,6 +794,15 @@ function Library:CreateWindow(options)
         end
         verBtn.MouseButton1Click:Connect(submit)
         box.FocusLost:Connect(function(enter) if enter then submit() end end)
+
+        -- Saved key: verify it automatically (autoexec friendly). If it is rejected the window just
+        -- stays open with the error so a new key can be entered. Disable with AutoLogin = false.
+        if restored and KS.AutoLogin ~= false then
+            task.spawn(function()
+                task.wait(0.6) -- let the open animation play first
+                submit()
+            end)
+        end
     end
 
     -- Key accepted -> the prompt fades, the window grows into the full UI, tabs and pages cascade in
@@ -1621,4 +1631,5 @@ if DEMO then
 end
 
 return Library
+--
 --
