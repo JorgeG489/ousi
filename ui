@@ -214,6 +214,15 @@ end
 -- ══════════════════════════════════════════
 function Library:CreateWindow(options)
     options = options or {}
+
+    -- A key window is already on screen (accepted key, waiting for the tabs): reuse it instead of
+    -- building a new one. The caller adds its tabs as usual and the window unlocks right after.
+    local prev = getgenv and getgenv().SimpleUIWindow
+    if prev and prev.Locked and prev.KeyValid and not options.KeySystem then
+        task.defer(function() prev:Unlock() end)
+        return prev
+    end
+
     local W = {Flags={}, Elements={}, Conns={}, Tabs={}, ActiveTab=nil, Minimized=false, SidebarMode=false, Visible=true}
     local title      = options.Title or "UI"
     local subtitle   = options.Subtitle or ""
@@ -1612,3 +1621,4 @@ if DEMO then
 end
 
 return Library
+--
